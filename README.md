@@ -45,6 +45,12 @@ WINEPREFIX=~/.mt5 wine pip install fastapi \
                                    python-dotenv
 ```
 
+Finally, simply run:
+
+```
+WINEPREFIX=~/.mt5 wine uvicorn main:app
+```
+
 ## Example
 
 To get a price:
