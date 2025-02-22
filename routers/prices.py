@@ -22,7 +22,7 @@ async def history_endpoint(info_request: GetHistory):
     if info_request.check_hour:
         df = check_if_current(df, info_request)
 
-    return df
+    return df.to_dict(orient="records")
 
 
 def check_if_current(df, info_request):
