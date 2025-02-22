@@ -24,7 +24,7 @@ x11vnc -display :1 -rfbport 5901 -forever -shared -geometry 1024x768
 
 On the client side: install `tigervnc` and connect to the server
 ```
-vncviewer IP_DO_SERVIDOR:5901
+vncviewer SERVER_IP:5901
 ```
 
 After installing metatrader5 as per the [official documentation](https://www.mql5.com/en/articles/625), a folder `.mt5`
