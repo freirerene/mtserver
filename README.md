@@ -1,6 +1,6 @@
 # MTserver
 
-Simple server to streamline the proccess of getting current price.
+Simple server to streamline the proccess of getting prices and sending orders.
 
 Can be deployed on a linux cloud using Wine 10.0, following these simple steps:
 
