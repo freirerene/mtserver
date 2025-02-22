@@ -35,7 +35,14 @@ To install python: `WINEPREFIX=~/.mt5 winetricks vcrun2015` and download a 64-bi
 (this code was tested on python 3.12.9) and install it and the dependencies:
 ```
 WINEPREFIX=~/.mt5 wine python-{version}-amd64.exe
-WINEPREFIX=~/.mt5 wine pip install fastapi uvicorn python-multipart pandas requests numpy MetaTrader5 python-dotenv
+WINEPREFIX=~/.mt5 wine pip install fastapi \
+                                   uvicorn \
+                                   python-multipart \
+                                   pandas \
+                                   requests \
+                                   numpy \
+                                   MetaTrader5\
+                                   python-dotenv
 ```
 
 ## Example
