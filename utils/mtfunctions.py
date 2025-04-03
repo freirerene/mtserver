@@ -112,8 +112,17 @@ def buy(trade: TradeRequest):
     }
 
     result = mt5.order_send(order_request)
+    print(result)
 
-    if result.retcode != mt5.TRADE_RETCODE_DONE:
+    try:
+        retcode = result.retcode
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"result {result} returned error {e}\n\n {mt5.last_error()}",
+        )
+
+    if retcode != mt5.TRADE_RETCODE_DONE:
         raise HTTPException(
             status_code=400,
             detail=f"Falha ao enviar ordem de BUY. Retcode={result.retcode}, {result.comment}",
