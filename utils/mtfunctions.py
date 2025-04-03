@@ -104,7 +104,7 @@ def buy(trade: TradeRequest):
         "volume": trade.volume,
         "type": mt5.ORDER_TYPE_BUY,
         "price": symbol_info.ask,
-        "deviation": trade.deviation,
+        "deviation": int(trade.deviation),
         "magic": trade.magic,
         "comment": trade.comment,
         "type_time": mt5.ORDER_TIME_GTC,

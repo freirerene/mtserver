@@ -13,6 +13,6 @@ class GetHistory(BaseModel):
 class TradeRequest(BaseModel):
     symbol: str
     volume: float
-    deviation: float
+    deviation: int
     magic: Optional[int] = 100
     comment: Optional[str] = "FastAPI order"
