@@ -1,5 +1,5 @@
+import asyncio
 import re
-import time
 from datetime import datetime
 
 from fastapi import APIRouter
@@ -8,6 +8,8 @@ from utils.mtfunctions import get_history, get_ticks
 from utils.schemas import GetHistory
 
 router = APIRouter()
+
+MAX_RETRIES = 60
 
 
 @router.get("/tick/{symbol}")
@@ -21,24 +23,23 @@ async def history_endpoint(info_request: GetHistory):
 
     df = get_history(info_request)
     if info_request.check_hour:
-        df = check_if_current(df, info_request)
+        df = await check_if_current(df, info_request)
 
     return df.to_dict(orient="records")
 
 
-def check_if_current(df, info_request):
+async def check_if_current(df, info_request):
     timeframe = info_request.timeframe
     current_hour = what_to_check(timeframe)
     if not current_hour:
         return df
 
     timeframe = re.search(r"\D", timeframe)[0]
-    dots = ""
-    while current_hour != int(df["time"].dt.strftime(f"%{timeframe}").iloc[-1]):
-        dots += "."
-        print(f"\r{dots}", end="")
+    for _ in range(MAX_RETRIES):
+        if current_hour == int(df["time"].dt.strftime(f"%{timeframe}").iloc[-1]):
+            return df
+        await asyncio.sleep(1)
         df = get_history(info_request)
-        time.sleep(1)
 
     return df
 

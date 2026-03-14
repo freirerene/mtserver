@@ -7,7 +7,7 @@ class GetHistory(BaseModel):
     symbol: str
     timeframe: str
     check_hour: Optional[bool] = True
-    ticks: Optional[int] = 0
+    ticks: Optional[int] = 100
     from_date: Optional[str] = ""
 
 

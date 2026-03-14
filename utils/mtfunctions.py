@@ -78,7 +78,7 @@ def get_history(info_request: GetHistory):
     df = pd.DataFrame(rates)
     df["time"] = pd.to_datetime(df["time"], unit="s")
 
-    df = df[["time", "open", "low", "high", "close"]]
+    df = df[["time", "open", "high", "low", "close"]]
 
     return df
 
@@ -97,13 +97,20 @@ def buy(trade: TradeRequest):
                 status_code=400, detail=f"Falha ao selecionar símbolo '{trade.symbol}'."
             )
 
+    tick = mt5.symbol_info_tick(trade.symbol)
+    if tick is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Falha ao obter tick de '{trade.symbol}': {mt5.last_error()}",
+        )
+
     order_request = {
         "action": mt5.TRADE_ACTION_DEAL,
         "symbol": trade.symbol,
         "volume": trade.volume,
         "type": mt5.ORDER_TYPE_BUY,
-        "price": symbol_info.ask,
-        "deviation": int(trade.deviation),
+        "price": tick.ask,
+        "deviation": trade.deviation,
         "magic": trade.magic,
         "comment": trade.comment,
         "type_time": mt5.ORDER_TIME_GTC,
@@ -111,17 +118,14 @@ def buy(trade: TradeRequest):
     }
 
     result = mt5.order_send(order_request)
-    print(result)
 
-    try:
-        retcode = result.retcode
-    except Exception as e:
+    if result is None:
         raise HTTPException(
             status_code=400,
-            detail=f"result {result} returned error {e}\n\n {mt5.last_error()}",
+            detail=f"order_send retornou None: {mt5.last_error()}",
         )
 
-    if retcode != mt5.TRADE_RETCODE_DONE:
+    if result.retcode != mt5.TRADE_RETCODE_DONE:
         raise HTTPException(
             status_code=400,
             detail=f"Falha ao enviar ordem de BUY. Retcode={result.retcode}, {result.comment}",
@@ -154,12 +158,19 @@ def sell(trade: TradeRequest):
                 status_code=400, detail=f"Falha ao selecionar símbolo '{trade.symbol}'."
             )
 
+    tick = mt5.symbol_info_tick(trade.symbol)
+    if tick is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Falha ao obter tick de '{trade.symbol}': {mt5.last_error()}",
+        )
+
     order_request = {
         "action": mt5.TRADE_ACTION_DEAL,
         "symbol": trade.symbol,
         "volume": trade.volume,
         "type": mt5.ORDER_TYPE_SELL,
-        "price": symbol_info.bid,
+        "price": tick.bid,
         "deviation": trade.deviation,
         "magic": trade.magic,
         "comment": trade.comment,
@@ -168,6 +179,12 @@ def sell(trade: TradeRequest):
     }
 
     result = mt5.order_send(order_request)
+
+    if result is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"order_send retornou None: {mt5.last_error()}",
+        )
 
     if result.retcode != mt5.TRADE_RETCODE_DONE:
         raise HTTPException(
@@ -230,6 +247,12 @@ def close():
         }
 
         result = mt5.order_send(close_request)
+
+        if result is None:
+            closed_positions.append(
+                {"symbol": pos.symbol, "ticket": pos.ticket, "error": f"order_send retornou None: {mt5.last_error()}"}
+            )
+            continue
 
         closed_positions.append(
             {
