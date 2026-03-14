@@ -1,23 +1,41 @@
+import os
+
 import MetaTrader5 as mt5
 from fastapi import FastAPI
 
 from routers import orders, prices
-from utils.credentials import LOGIN, MT_PATH, PASSWORD, SERVER
 
 app = FastAPI(redoc_url=None, docs_url=None)
 
 
+def _build_mt5_kwargs():
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+
+    kwargs = {}
+    mt_path = os.getenv("MT_PATH")
+    login = os.getenv("LOGIN")
+    password = os.getenv("PASSWORD")
+    server = os.getenv("SERVER")
+
+    if mt_path:
+        kwargs["path"] = mt_path
+    if login:
+        kwargs["login"] = int(login)
+    if password:
+        kwargs["password"] = password
+    if server:
+        kwargs["server"] = server
+
+    return kwargs
+
+
 @app.on_event("startup")
 async def startup_event():
-    kwargs = {}
-    if MT_PATH:
-        kwargs["path"] = MT_PATH
-    if LOGIN:
-        kwargs["login"] = int(LOGIN)
-    if PASSWORD:
-        kwargs["password"] = PASSWORD
-    if SERVER:
-        kwargs["server"] = SERVER
+    kwargs = _build_mt5_kwargs()
 
     if not mt5.initialize(**kwargs):
         raise RuntimeError(
